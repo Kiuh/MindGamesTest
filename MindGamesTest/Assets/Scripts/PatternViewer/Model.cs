@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -49,6 +50,33 @@ namespace PatternViewer
                     matrix.Add(UnityEngine.Random.value >= 0.5f);
                 }
             }
+        }
+
+        public bool IsMatrixEqual(List<List<bool>> bools)
+        {
+            if (Size.x != bools.Count)
+            {
+                Debug.LogError("IsMatrixEqual Called on different matrix (x)");
+                return false;
+            }
+
+            for (int i = 0; i < bools.Count; i++)
+            {
+                if (Size.y != bools[i].Count)
+                {
+                    Debug.LogError("IsMatrixEqual Called on different matrix (y)");
+                    return false;
+                }
+
+                for (int j = 0; j < bools[i].Count; j++)
+                {
+                    if (GetMatrixValue(i, j) != bools[i][j])
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
 
         public override void OnDestroy()

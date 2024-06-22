@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -9,7 +10,7 @@ namespace Gameplay
     internal class TilesMatcher : NetworkBehaviour
     {
         [Serializable]
-        private struct PlaceZone
+        private class PlaceZone
         {
             public bool IsBusy;
             public Bounds Bounds;
@@ -27,10 +28,37 @@ namespace Gameplay
         [SerializeField]
         private GameObject placePrefab;
 
+        [SerializeField]
+        private PatternViewer.Model patternViewer;
+
+        [SerializeField]
+        private Score.Model scoreModel;
+
+        [SerializeField]
+        private TilesSpawner spawner;
+
         private List<List<PlaceZone>> placeZones = new();
 
         public override void OnNetworkSpawn()
         {
+            CreatePlaceZones();
+            foreach (List<PlaceZone> zones in placeZones)
+            {
+                foreach (PlaceZone zone in zones)
+                {
+                    _ = Instantiate(
+                        placePrefab,
+                        zone.Bounds.center,
+                        Quaternion.identity,
+                        transform
+                    );
+                }
+            }
+        }
+
+        private void CreatePlaceZones()
+        {
+            placeZones.Clear();
             for (int i = 0; i < size.x; i++)
             {
                 placeZones.Add(new());
@@ -38,8 +66,6 @@ namespace Gameplay
                 {
                     Vector3 position =
                         transform.position + new Vector3(shift.x * i, shift.y * j, 0);
-                    _ = Instantiate(placePrefab, position, Quaternion.identity, transform);
-
                     PlaceZone zone =
                         new() { IsBusy = false, Bounds = new Bounds(position, bounds) };
                     placeZones[i].Add(zone);
@@ -49,15 +75,35 @@ namespace Gameplay
 
         public void TryPlaceTile(Tile tile)
         {
-            foreach (List<PlaceZone> list in placeZones)
+            for (int i = 0; i < placeZones.Count; i++)
             {
-                foreach (PlaceZone zone in list)
+                for (int j = 0; j < placeZones[i].Count; j++)
                 {
+                    PlaceZone zone = placeZones[i][j];
                     if (!zone.IsBusy && zone.Bounds.Contains(tile.transform.position))
                     {
+                        zone.IsBusy = true;
                         tile.transform.position = zone.Bounds.center;
+                        void action()
+                        {
+                            zone.IsBusy = false;
+                            tile.OnTileGrabbed -= action;
+                        }
+                        tile.OnTileGrabbed += action;
                     }
                 }
+            }
+
+            List<List<bool>> bools = placeZones
+                .Select(x => x.Select(x => x.IsBusy).ToList())
+                .ToList();
+
+            if (patternViewer.IsMatrixEqual(bools))
+            {
+                scoreModel.Score++;
+                spawner.CreateTiles();
+                patternViewer.GenerateRandom();
+                CreatePlaceZones();
             }
         }
     }

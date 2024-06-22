@@ -15,9 +15,6 @@ namespace Character
         private Tile grabbedTile;
 
         [SerializeField]
-        private Transform bufferParent;
-
-        [SerializeField]
         private Transform grabPosition;
 
         [SerializeField]
@@ -48,17 +45,15 @@ namespace Character
                 if (collider != null && collider.GetComponent<Tile>() != null)
                 {
                     grabbedTile = collider.GetComponent<Tile>();
-                    bufferParent = grabbedTile.transform.parent;
-                    grabbedTile.transform.parent = transform;
+                    grabbedTile.Grab(transform);
                 }
             }
             else
             {
-                grabbedTile.transform.parent = bufferParent;
+                grabbedTile.UnGrab();
                 tilesMatcher = FindAnyObjectByType<TilesMatcher>();
                 tilesMatcher.TryPlaceTile(grabbedTile);
                 grabbedTile = null;
-                bufferParent = null;
             }
         }
     }

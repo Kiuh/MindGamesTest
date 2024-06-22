@@ -11,7 +11,7 @@ namespace Gameplay
         private Tile tilePrefab;
 
         [SerializeField]
-        private List<Tile> tiles;
+        private List<Tile> tiles = new();
 
         [SerializeField]
         private int tileCount;
@@ -33,6 +33,8 @@ namespace Gameplay
             {
                 tile.GetComponent<NetworkObject>().Despawn();
             }
+            tiles.Clear();
+
             for (int i = 0; i < tileCount; i++)
             {
                 Vector3 position =
@@ -45,6 +47,7 @@ namespace Gameplay
                 Tile instance = Instantiate(tilePrefab, position, Quaternion.identity, transform);
                 NetworkObject instanceNetworkObject = instance.GetComponent<NetworkObject>();
                 instanceNetworkObject.Spawn();
+                tiles.Add(instance);
             }
         }
     }
