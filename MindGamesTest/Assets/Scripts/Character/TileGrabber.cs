@@ -17,6 +17,12 @@ namespace Character
         [SerializeField]
         private Transform bufferParent;
 
+        [SerializeField]
+        private Transform grabPosition;
+
+        [SerializeField]
+        private TilesMatcher tilesMatcher;
+
         public override void OnNetworkSpawn()
         {
             if ((IsServer || !IsOwner) && !IsHost)
@@ -38,7 +44,7 @@ namespace Character
         {
             if (grabbedTile == null)
             {
-                Collider2D collider = Physics2D.OverlapPoint(transform.position);
+                Collider2D collider = Physics2D.OverlapPoint(grabPosition.position);
                 if (collider != null && collider.GetComponent<Tile>() != null)
                 {
                     grabbedTile = collider.GetComponent<Tile>();
@@ -49,6 +55,8 @@ namespace Character
             else
             {
                 grabbedTile.transform.parent = bufferParent;
+                tilesMatcher = FindAnyObjectByType<TilesMatcher>();
+                tilesMatcher.TryPlaceTile(grabbedTile);
                 grabbedTile = null;
                 bufferParent = null;
             }

@@ -31,7 +31,7 @@ namespace PatternViewer
             matrix.OnListChanged += (list) => OnMatrixChanged?.Invoke();
             if (IsServer || IsHost)
             {
-                GenerateRandomServerRpc();
+                GenerateRandom();
             }
             else
             {
@@ -39,8 +39,7 @@ namespace PatternViewer
             }
         }
 
-        [ServerRpc]
-        public void GenerateRandomServerRpc()
+        public void GenerateRandom()
         {
             matrix.Clear();
             for (int i = 0; i < size.x; i++)

@@ -16,18 +16,8 @@ namespace Character
         [SerializeField]
         private bool isReadInput = false;
 
-        [SerializeField]
-        private NetworkVariable<Vector3> netPosition =
-            new(
-                default,
-                NetworkVariableReadPermission.Everyone,
-                NetworkVariableWritePermission.Owner
-            );
-
         public override void OnNetworkSpawn()
         {
-            netPosition.OnValueChanged += UpdatePosition;
-
             if ((IsServer || !IsOwner) && !IsHost)
             {
                 return;
@@ -38,14 +28,14 @@ namespace Character
             movementInput.canceled += MovementInputCanceled;
         }
 
-        private void MovementInputCanceled(InputAction.CallbackContext context)
-        {
-            isReadInput = false;
-        }
-
         private void MovementInputPerformed(InputAction.CallbackContext context)
         {
             isReadInput = true;
+        }
+
+        private void MovementInputCanceled(InputAction.CallbackContext context)
+        {
+            isReadInput = false;
         }
 
         private void Update()
@@ -54,13 +44,14 @@ namespace Character
             {
                 Vector2 direction = movementInput.ReadValue<Vector2>();
                 Vector3 moveDelta = speed * Time.deltaTime * (Vector3)direction;
-                netPosition.Value += moveDelta;
+                UpdatePositionServerRpc(moveDelta);
             }
         }
 
-        private void UpdatePosition(Vector3 oldPos, Vector3 newPos)
+        [ServerRpc]
+        private void UpdatePositionServerRpc(Vector3 moveDelta)
         {
-            transform.position = newPos;
+            transform.position += moveDelta;
         }
     }
 }
