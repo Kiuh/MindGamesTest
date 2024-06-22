@@ -2,10 +2,10 @@
 using Unity.Netcode;
 using UnityEngine;
 
-namespace Gameplay
+namespace Tiles
 {
-    [AddComponentMenu("Scripts/Gameplay/Gameplay.TilesSpawner")]
-    internal class TilesSpawner : NetworkBehaviour
+    [AddComponentMenu("Scripts/Tiles/Tiles.Spawner")]
+    internal class Spawner : NetworkBehaviour
     {
         [SerializeField]
         private Tile tilePrefab;

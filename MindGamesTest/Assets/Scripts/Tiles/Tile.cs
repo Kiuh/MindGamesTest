@@ -2,9 +2,9 @@
 using Unity.Netcode;
 using UnityEngine;
 
-namespace Gameplay
+namespace Tiles
 {
-    [AddComponentMenu("Scripts/Gameplay/Gameplay.Tile")]
+    [AddComponentMenu("Scripts/Tiles/Tiles.Tile")]
     internal class Tile : NetworkBehaviour
     {
         public event Action OnTileGrabbed;

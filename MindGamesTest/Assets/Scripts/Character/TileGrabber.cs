@@ -1,4 +1,4 @@
-﻿using Gameplay;
+﻿using Tiles;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -18,7 +18,7 @@ namespace Character
         private Transform grabPosition;
 
         [SerializeField]
-        private TilesMatcher tilesMatcher;
+        private Matcher tilesMatcher;
 
         public override void OnNetworkSpawn()
         {
@@ -51,7 +51,7 @@ namespace Character
             else
             {
                 grabbedTile.UnGrab();
-                tilesMatcher = FindAnyObjectByType<TilesMatcher>();
+                tilesMatcher = FindAnyObjectByType<Matcher>();
                 tilesMatcher.TryPlaceTile(grabbedTile);
                 grabbedTile = null;
             }

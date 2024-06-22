@@ -22,12 +22,12 @@ namespace PatternViewer
         [SerializeField]
         private Model model;
 
-        private void Start()
+        private void Awake()
         {
-            model.OnMatrixChanged += UpdateMatrixView;
+            model.OnGridChanged += UpdateGridView;
         }
 
-        private void UpdateMatrixView()
+        private void UpdateGridView()
         {
             while (tiles.Count > 0)
             {
@@ -35,26 +35,22 @@ namespace PatternViewer
                 tiles.RemoveAt(0);
             }
 
-            for (int i = 0; i < model.Size.x; i++)
+            foreach (Common.GridCell cell in model.Grid)
             {
-                for (int j = 0; j < model.Size.y; j++)
+                Vector3 position =
+                    transform.position
+                    + new Vector3(shift.x * cell.Position.x, shift.y * cell.Position.y, 0);
+
+                GameObject back = Instantiate(
+                    backgroundPrefab,
+                    position,
+                    Quaternion.identity,
+                    transform
+                );
+                tiles.Add(back);
+
+                if (cell.Busy)
                 {
-                    Vector3 position =
-                        transform.position + new Vector3(shift.x * i, shift.y * j, 0);
-
-                    GameObject back = Instantiate(
-                        backgroundPrefab,
-                        position,
-                        Quaternion.identity,
-                        transform
-                    );
-                    tiles.Add(back);
-
-                    if (!model.GetMatrixValue(i, j))
-                    {
-                        continue;
-                    }
-
                     GameObject newTile = Instantiate(
                         tilePrefab,
                         position,

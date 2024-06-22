@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Common;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -12,68 +14,50 @@ namespace PatternViewer
         private Vector2Int size;
         public Vector2Int Size => size;
 
-        private NetworkList<bool> matrix;
+        private NetworkList<GridCell> grid;
+        public NetworkList<GridCell> Grid => grid;
 
-        public bool GetMatrixValue(int x, int y)
-        {
-            int index = (x * size.x) + y;
-            return index >= matrix.Count ? false : matrix[index];
-        }
-
-        public event Action OnMatrixChanged;
+        public event Action OnGridChanged;
 
         private void Awake()
         {
-            matrix = new();
+            grid = new();
         }
 
         public override void OnNetworkSpawn()
         {
-            matrix.OnListChanged += (list) => OnMatrixChanged?.Invoke();
+            grid.OnListChanged += (l) => OnGridChanged?.Invoke();
             if (IsServer || IsHost)
             {
-                GenerateRandom();
+                GenerateRandomGrid();
             }
             else
             {
-                OnMatrixChanged?.Invoke();
+                OnGridChanged?.Invoke();
             }
         }
 
-        public void GenerateRandom()
+        public void GenerateRandomGrid()
         {
-            matrix.Clear();
+            grid.Clear();
             for (int i = 0; i < size.x; i++)
             {
                 for (int j = 0; j < size.y; j++)
                 {
-                    matrix.Add(UnityEngine.Random.value >= 0.5f);
+                    GridCell cell =
+                        new() { Busy = UnityEngine.Random.value >= 0.5f, Position = new(i, j) };
+                    grid.Add(cell);
                 }
             }
         }
 
-        public bool IsMatrixEqual(List<List<bool>> bools)
+        public bool IsGridEqual(List<GridCell> otherGrid)
         {
-            if (Size.x != bools.Count)
+            foreach (GridCell cell in Grid)
             {
-                Debug.LogError("IsMatrixEqual Called on different matrix (x)");
-                return false;
-            }
-
-            for (int i = 0; i < bools.Count; i++)
-            {
-                if (Size.y != bools[i].Count)
+                if (!otherGrid.Any(x => x.Equals(cell)))
                 {
-                    Debug.LogError("IsMatrixEqual Called on different matrix (y)");
                     return false;
-                }
-
-                for (int j = 0; j < bools[i].Count; j++)
-                {
-                    if (GetMatrixValue(i, j) != bools[i][j])
-                    {
-                        return false;
-                    }
                 }
             }
             return true;
@@ -81,7 +65,7 @@ namespace PatternViewer
 
         public override void OnDestroy()
         {
-            matrix?.Dispose();
+            grid?.Dispose();
         }
     }
 }
